@@ -1,4 +1,12 @@
 {
   "extends": "stylelint-config-standard",
-  "rules": {}
+  "rules": {
+    "color-function-notation": "modern",
+    "color-hex-length": "short",
+    "media-feature-range-notation": "context",
+    "keyframes-name-pattern": "^[a-z0-9\\-]+$",
+    "declaration-block-single-line-max-declarations": 1,
+    "rule-empty-line-before": ["always", { "ignore": ["first-nested"] }],
+    "no-descending-specificity": null
+  }
 }

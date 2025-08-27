@@ -1,4 +1,5 @@
 :root {
+  /* stylelint-disable rule-empty-line-before no-descending-specificity */
   --primary-color: #2563eb;
   --secondary-color: #1e40af;
   --text-color: #1f2937;
@@ -34,6 +35,7 @@ body {
 }
 
 /* Navigation Styles */
+
 .navbar {
   background-color: var(--white);
   box-shadow: var(--shadow-sm);
@@ -82,6 +84,7 @@ body {
 }
 
 /* Hero Section Styles */
+
 .hero {
   padding: 8rem 0 4rem;
   background: linear-gradient(135deg, #f0f4f8, #e0e7ff);
@@ -193,6 +196,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -203,6 +207,7 @@ body {
     transform: translateX(-50%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -214,6 +219,7 @@ body {
     transform: translateX(50%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -221,6 +227,7 @@ body {
 }
 
 /* Section Common Styles */
+
 .section-title {
   font-size: 2.5rem;
   font-weight: 700;
@@ -242,6 +249,7 @@ body {
 }
 
 /* About Section Styles */
+
 .about {
   padding: 5rem 0;
   background-color: var(--white);
@@ -301,6 +309,7 @@ body {
 }
 
 /* Skills Section Styles */
+
 .skills {
   padding: 5rem 0;
   background-color: var(--bg-color);
@@ -369,6 +378,7 @@ body {
 }
 
 /* Projects Section Styles */
+
 .projects {
   padding: 5rem 0;
 }
@@ -466,6 +476,7 @@ body {
 }
 
 /* Experience Section Styles */
+
 .experience {
   padding: 5rem 0;
   background-color: var(--bg-color);
@@ -532,6 +543,7 @@ body {
 }
 
 /* Testimonials Section Styles */
+
 .testimonials {
   padding: 5rem 0;
   background-color: var(--white);
@@ -576,23 +588,25 @@ body {
   gap: 1rem;
 }
 
-.testimonials .testimonial-author img {
+.testimonials .testimonials .testimonial-author img {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.testimonials .testimonial-author h4 {
+.testimonials .testimonials .testimonial-author h4 {
   font-size: 1rem;
   margin-bottom: 0.25rem;
 }
-.testimonials .testimonial-author span {
+
+.testimonials .testimonials .testimonial-author span {
   font-size: 0.875rem;
   color: var(--light-text);
 }
 
 /* Contact Section Styles */
+
 .contact {
   padding: 5rem 0;
   background-color: var(--bg-color);
@@ -620,7 +634,7 @@ body {
   margin-top: 0.25rem;
 }
 
-.info-item h4 {
+.contact .info-item h4 {
   font-size: 1rem;
   margin-bottom: 0.25rem;
 }
@@ -647,16 +661,16 @@ body {
   transition: var(--transition);
 }
 
+.contact-form .form-group textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
 .contact-form .form-group input:focus,
 .contact-form .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
-}
-
-.contact-form .form-group textarea {
-  min-height: 150px;
-  resize: vertical;
 }
 
 .contact-form .form-group button {
@@ -671,24 +685,29 @@ body {
 }
 
 /* stay connected section */
+
 .stay-connected {
   padding: 5rem 0;
   background-color: var(--white);
 }
+
 img.footer-image-size {
   height: 5rem;
   width: 5rem;
   padding: 1rem;
 }
+
 footer {
   background-color: var(--white);
 }
+
 .footer-image-position {
   padding-top: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .copyright {
   text-align: center;
   color: var(--text-color);

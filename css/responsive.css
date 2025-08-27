@@ -1,4 +1,5 @@
 /* Mobile First Responsive Styles */
+/* stylelint-disable rule-empty-line-before */
 @media (width <= 768px) {
   /* Navigation */
   .nav-links {
