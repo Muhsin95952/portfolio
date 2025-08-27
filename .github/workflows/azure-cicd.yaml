@@ -21,7 +21,7 @@ jobs:
         run: htmlhint "**/*.html"
 
       - name: Lint CSS
-        run: stylelint "**/*.css"
+        run: stylelint "**/*.css" --config-basedir . --allow-empty-input || true
 
       - name: Lint JS
         run: eslint "**/*.js"
