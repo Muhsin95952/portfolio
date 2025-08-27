@@ -42,11 +42,38 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: Retag existing :latest to numeric tag (if present)
+        run: |
+          set -euo pipefail
+          IMAGE="muhsin95952/muhsin-portfolio"
+          USER="muhsin95952"
+          REPO="muhsin-portfolio"
+          # install jq to parse Docker Hub API
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+
+          # query Docker Hub for numeric tags
+          tags=$(curl -s "https://registry.hub.docker.com/v2/repositories/${USER}/${REPO}/tags?page_size=100" | jq -r '.results[].name') || true
+          nums=$(echo "$tags" | grep -E '^[0-9]+$' || true)
+          if [ -n "$nums" ]; then
+            max=$(echo "$nums" | sort -n | tail -n1)
+            next=$((max+1))
+          else
+            next=1
+          fi
+
+          # if latest exists locally or on remote, pull it and push as numeric tag
+          if docker pull "${IMAGE}:latest" >/dev/null 2>&1; then
+            docker tag "${IMAGE}:latest" "${IMAGE}:${next}"
+            docker push "${IMAGE}:${next}"
+          else
+            echo "No existing :latest image found to retag. Skipping."
+          fi
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: muhsin95952/muhisn-portfolio:latest
+          tags: muhsin95952/muhsin-portfolio:latest
 
   trivy_scan:
     name: Run Trivy Vulnerability Scan
@@ -60,7 +87,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: image
-          image-ref: muhsin95952/muhisn-portfolio:latest
+          image-ref: muhsin95952/muhsin-portfolio:latest
           format: "table"
           ignore-unfixed: true
           vuln-type: "os,library"
@@ -77,7 +104,9 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            # delete existing container if any
-            docker rm -f muhsin-portfolio || true
-            docker pull muhsin95952/muhisn-portfolio:latest
-            docker run -d -p 80:80 muhsin95952/muhisn-portfolio:latest
+            # stop and remove existing container (by name if running)
+            docker ps -q --filter ancestor=muhsin95952/muhsin-portfolio:latest | xargs -r docker stop || true
+            docker ps -aq --filter ancestor=muhsin95952/muhsin-portfolio:latest | xargs -r docker rm -f || true
+            # pull the newly pushed latest and run
+            docker pull muhsin95952/muhsin-portfolio:latest
+            docker run -d -p 80:80 muhsin95952/muhsin-portfolio:latest
