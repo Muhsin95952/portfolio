@@ -1,3 +1,6 @@
+/* eslint-env browser */
+/* global document, window, alert, IntersectionObserver */
+
 document.addEventListener('DOMContentLoaded', function() {
     // Mobile menu toggle
     const menuToggle = document.querySelector('.menu-toggle');
@@ -32,6 +35,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Simple skill bar animator (safe no-op if no skill bars present)
+    function animateSkillBars() {
+        const cards = document.querySelectorAll('.skill-card');
+        cards.forEach(card => {
+            // prefer a child element with .skill-bar and data-level
+            const bar = card.querySelector('.skill-bar');
+            const level = card.dataset.level || (bar && bar.dataset.level);
+            if (bar && level) {
+                const value = String(level).trim();
+                bar.style.width = value.endsWith('%') ? value : `${value}%`;
+                bar.classList.add('filled');
+            } else {
+                // fallback: mark card as animated so CSS can respond
+                card.classList.add('animated');
+            }
+        });
+    }
 
     // Intersection Observer for scroll animations
     const observerOptions = {
