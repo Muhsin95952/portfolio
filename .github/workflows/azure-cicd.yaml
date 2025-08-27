@@ -7,22 +7,23 @@ on:
 
 jobs:
   # 1. Lint & validate code
-  lint_validate:
-    runs-on: ubuntu-latest
-    steps:
+    lint_validate:
+      runs-on: ubuntu-latest
+      steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install linters
+      - name: Install linters and configs
         run: |
-          npm install --global htmlhint stylelint eslint
+            npm install --global htmlhint stylelint eslint stylelint-config-standard
 
       - name: Lint HTML
         run: htmlhint "**/*.html"
 
       - name: Lint CSS
-        run: stylelint "**/*.css" --config-basedir . --allow-empty-input || true
+        run: stylelint "**/*.css"
 
       - name: Lint JS
         run: eslint "**/*.js"
+
 
