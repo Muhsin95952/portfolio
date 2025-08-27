@@ -104,9 +104,35 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            # stop and remove existing container (by name if running)
+            # --- stop any container currently binding host port 80 ---
+            PORT_CONTAINERS=$(docker ps --format '{{.ID}} {{.Ports}}' | grep -E '0.0.0.0:80|:80->' | awk '{print $1}' || true)
+            if [ -n "$PORT_CONTAINERS" ]; then
+              echo "Stopping containers using port 80: $PORT_CONTAINERS"
+              echo "$PORT_CONTAINERS" | xargs -r docker stop || true
+              echo "$PORT_CONTAINERS" | xargs -r docker rm -f || true
+            fi
+
+            # Also stop any container started from the previous image (defensive)
             docker ps -q --filter ancestor=muhsin95952/muhsin-portfolio:latest | xargs -r docker stop || true
             docker ps -aq --filter ancestor=muhsin95952/muhsin-portfolio:latest | xargs -r docker rm -f || true
-            # pull the newly pushed latest and run
+
+            # verify port 80 is free; if not, abort so the runner log shows the occupying process
+            if command -v ss >/dev/null 2>&1; then
+              if ss -ltnp 2>/dev/null | grep -q ':80'; then
+                echo "Port 80 is still in use after stopping containers. Aborting deploy." >&2
+                ss -ltnp 2>/dev/null | grep ':80' || true
+                exit 1
+              fi
+            elif command -v netstat >/dev/null 2>&1; then
+              if netstat -tlnp 2>/dev/null | grep -q ':80'; then
+                echo "Port 80 is still in use after stopping containers. Aborting deploy." >&2
+                netstat -tlnp 2>/dev/null | grep ':80' || true
+                exit 1
+              fi
+            fi
+
+            # pull the newly pushed latest and run (give container a deterministic name)
             docker pull muhsin95952/muhsin-portfolio:latest
-            docker run -d -p 80:80 muhsin95952/muhsin-portfolio:latest
+            # remove any container with the same name (defensive)
+            docker rm -f muhsin_portfolio_app || true
+            docker run -d --name muhsin_portfolio_app -p 80:80 muhsin95952/muhsin-portfolio:latest
