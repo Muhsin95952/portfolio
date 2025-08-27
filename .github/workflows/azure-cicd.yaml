@@ -1,0 +1,103 @@
+name: Portfolio CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # 1. Checkout code
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+  # 2. Lint & validate code
+  lint_validate:
+    runs-on: ubuntu-latest
+    needs: checkout
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lint HTML
+        run: |
+          npx htmlhint "**/*.html"
+
+      - name: Lint CSS
+        run: |
+          npx stylelint "**/*.css"
+
+      - name: Lint JS
+        run: |
+          npx eslint "**/*.js"
+
+  # 3. Build Docker image
+  build:
+    runs-on: ubuntu-latest
+    needs: lint_validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t portfolio:latest .
+
+  # 4. Security scan with Trivy
+  security_scan:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y wget
+          wget -qO- https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb stable main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Run Trivy scan on Docker image
+        run: |
+          docker build -t portfolio:latest .
+          trivy image --exit-code 0 --severity HIGH,CRITICAL portfolio:latest
+          trivy image --exit-code 1 --severity CRITICAL portfolio:latest
+
+  # 5. Push Docker image to VM
+  push_to_vm:
+    runs-on: ubuntu-latest
+    needs: security_scan
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Push Docker image to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: "."
+          target: "~/portfolio-app"
+
+  # 6. Deploy & run on VM
+  deploy:
+    runs-on: ubuntu-latest
+    needs: push_to_vm
+    steps:
+      - name: Deploy container on VM
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/portfolio-app
+            docker build -t portfolio:latest .
+            docker rm -f portfolio || true
+            docker run -d --name portfolio -p 80:80 portfolio:latest
